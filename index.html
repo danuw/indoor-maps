@@ -36,6 +36,10 @@
     const tilesetId = "<your tilesetId>";
     const statesetId = "<your statesetId>";
 
+    
+    var list = [];
+    var heatmappoints = [];
+
     const map = new atlas.Map("map-id", {
       //use your facility's location
       center: [-122.13215, 47.63647],
@@ -92,6 +96,7 @@
 
 
     /// HEATMAP
+    //https://docs.microsoft.com/en-us/azure/azure-maps/map-add-heat-map-layer
     var heatmapdatasource = new atlas.source.DataSource();
     /* Upon a mouse click, log the feature properties to the browser's console. */
     map.events.add("ready", function (e) {
@@ -108,7 +113,8 @@
       }), 'labels');
     });
 
-    /// POPUP 
+    /// POPUP
+    //https://docs.microsoft.com/en-us/azure/azure-maps/map-add-popup
     //Create a popup but leave it closed so we can update it and display it later.
     popup = new atlas.Popup();
 
@@ -119,6 +125,13 @@
 
       //var p = e.shapes[0].getProperties();
       console.log(e);
+
+      //https://docs.microsoft.com/en-us/azure/azure-maps/create-data-source-web-sdk
+      //Create GeoJSON using helper classes (less error prone and less typing).
+      var geoJsonClass = new atlas.data.Feature(new atlas.data.Point(e.position), {
+        "custom-property": feature.properties.featureId
+      });
+      heatmapdatasource.add(geoJsonClass);
 
       //var position = e.position.getCoordinates();
       //Create HTML from properties of the selected result.
@@ -137,8 +150,6 @@
 
       //Open the popup.
       popup.open(map);
-
-      console.log(list);
     }
   </script>
 </body>
