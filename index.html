@@ -91,6 +91,24 @@
     });
 
 
+    /// HEATMAP
+    var heatmapdatasource = new atlas.source.DataSource();
+    /* Upon a mouse click, log the feature properties to the browser's console. */
+    map.events.add("ready", function (e) {
+      //Create a data source and add it to the map.
+      map.sources.add(heatmapdatasource);
+
+      //Load a dataset of points, in this case earthquake data from the USGS.
+      heatmapdatasource.importDataFromUrl('https://next.json-generator.com/api/json/get/VJrXycMvt');
+
+      //Create a heat map and add it to the map.
+      map.layers.add(new atlas.layer.HeatMapLayer(heatmapdatasource, null, {
+        radius: 10,
+        opacity: 0.8
+      }), 'labels');
+    });
+
+    /// POPUP 
     //Create a popup but leave it closed so we can update it and display it later.
     popup = new atlas.Popup();
 
