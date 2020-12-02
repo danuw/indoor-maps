@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Animate multiple points - Azure Maps Web SDK Samples</title>
+
+    <meta charset="utf-8" />
+	<link rel="shortcut icon" href="/favicon.ico"/>
+    <meta http-equiv="x-ua-compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="This sample shows how to animate multiple points on the map." />
+    <meta name="keywords" content="Microsoft maps, map, gis, API, SDK, animation, animate, animations, point, symbol, pushpin, marker, pin" />
+    <meta name="author" content="Microsoft Azure Maps" />
+
+    <!-- Add references to the Azure Maps Map control JavaScript and CSS files. -->
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" type="text/css" />
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+
+    <!-- Add reference to the animation module. -->
+    <script src="./anim.js"></script>
+
+    <script type='text/javascript'>
+    let cities = [
+    [2.460938, 48.632909],
+    [-0.131836, 51.426614],
+    [394.774475, 32.075593],
+    [-8.393555, 51.917168],
+    [-73.99292, 40.735812],
+    [237.546387, 37.740313],
+    [241.765137, 34.034453],
+    [-8.393555, 51.917168],
+    [12.44751, 41.885921],
+    [139.759827, 35.67961],
+    [151.259766, -34.016242],
+    [244.6875, 36.102376]
+    ];
+        var map, points = [], numPoints = cities.length, currentGroupAnimation = null;
+    const subscriptionKey = "<key>";
+    
+// let cities = {
+//     "paris": [2.460938, 48.632909],
+//     "london": [-0.131836, 51.426614],
+//     "tlv": [394.774475, 32.075593],
+//     "cork": [-8.393555, 51.917168],
+//     "nyc": [-73.99292, 40.735812],
+//     "sf": [237.546387, 37.740313],
+//     "la":[241.765137, 34.034453],
+//     "madrid":[-8.393555, 51.917168],
+//     "rome": [12.44751, 41.885921],
+//     "tokyo":[139.759827, 35.67961],
+//     "sydney":[151.259766, -34.016242],
+//     "vegas":[244.6875, 36.102376]
+// };
+        function GetMap() {
+            //Initialize a map instance.
+            map = new atlas.Map('myMap', {
+                view: 'Auto',
+				
+		//Add your Azure Maps key to the map SDK. Get an Azure Maps key at https://azure.com/maps. NOTE: The primary key should be used as the key.
+                authOptions: {
+                    authType: 'subscriptionKey',
+                    subscriptionKey: subscriptionKey
+                }
+            });
+
+            //Wait until the map resources are ready.
+            map.events.add('ready', function () {
+                //Create a data source and add it to the map.
+                datasource = new atlas.source.DataSource();
+                map.sources.add(datasource);
+
+                //datasource.importDataFromUrl("https://next.json-generator.com/api/json/get/EJwlkSl_K");
+
+                for (var i = 0; i < 3; i++) {
+                    //Create an AnimatedPoint object with a random position and color.
+                    points.push(new atlas.Shape(new atlas.data.Point(cities[i]), null, {
+                        color: "#000000".replace(/0/g, function () { return (~~(Math.random() * 16)).toString(16); })
+                    }));
+                }
+
+                //Add the points to the data source.
+                datasource.add(points);
+
+                //Add a layer for rendering point data as symbols.
+                map.layers.add(new atlas.layer.BubbleLayer(datasource, null, {
+                    color: ['get', 'color']
+                }));
+
+
+                window.setTimeout(playAnimations, 1000);
+            });
+        }
+
+        //https://next.json-generator.com/api/json/get/EJwlkSl_K
+
+        //https://next.json-generator.com/api/json/get/VkdmlHgut
+
+        //https://next.json-generator.com/api/json/get/41I5lre_Y
+
+        var paris = [-8.085938, 51.618017];
+        var london = [-70.488281, 43.961191];
+        var irlande = [-62.753906, 6.489983];
+
+
+        function playAnimations(type) {
+            
+            if (currentGroupAnimation) {
+                currentGroupAnimation.dispose();
+                currentGroupAnimation = null;
+            }
+
+            var animations = [];
+
+            let r = Math.random() *10000
+            console.log(r);
+            console.log(r% 3);
+            //Animate each point to a new random coordinate over a random duration between 100ms and 2000ms
+            for (var i = 0; i < 3; i++) {
+                var from = points[i], to = cities[getRandomInt(cities.length)];
+                animations.push(atlas.animations.setCoordinates(from, to, { duration: (from-to) * 1900 + 100 }));
+            }
+
+            var groupOptions = {
+                playType: type || 'together'
+            };
+
+            if(type === 'interval'){
+                groupOptions.interval = 100;
+            }
+
+            currentGroupAnimation = new atlas.animations.GroupAnimation(animations, groupOptions);
+            currentGroupAnimation.play();
+        }
+
+        function stopAnimations() {
+            if (currentGroupAnimation) {
+                currentGroupAnimation.stop();
+            }
+        }
+
+        function getRandomPosition() {
+            return [Math.random() * 360 - 180, Math.random() * 170 - 85];
+        }
+        function getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+        }
+    </script>
+</head>
+<body onload="GetMap()">
+    <div id="myMap" style="position:relative;width:100%;min-width:290px;height:600px;"></div>
+
+    <div style="position:absolute;top:10px;left:10px;background-color:white;padding:5px;">
+        <input type="button" value="Play together" onclick="playAnimations('together');" />
+        <input type="button" value="Play sequentially" onclick="playAnimations('sequential');" />
+        <input type="button" value="Play interval (100ms)" onclick="playAnimations('interval');" />
+        <input type="button" value="Stop" onclick="stopAnimations();" />
+    </div>
+
+    <fieldset style="width:calc(100% - 30px);min-width:290px;margin-top:10px;">
+        <legend><h1 style="font-size:16px">Animate multiple points</h1></legend>
+        This sample shows how to animate multiple points on the map. 
+        This sample uses the open source <a href="https://github.com/Azure-Samples/azure-maps-animations" target="_blank">Azure Maps Animation module</a>
+    </fieldset>
+</body>
+</html>
